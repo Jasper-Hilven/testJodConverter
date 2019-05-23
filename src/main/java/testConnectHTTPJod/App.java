@@ -60,39 +60,10 @@ public class App {
             HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 
 
-            Multipart part = new Multipart(DEFAULT_JODCONVERTER_ENDPOINT,"UTF_8");
+            Multipart part = new Multipart(DEFAULT_JODCONVERTER_ENDPOINT,"UTF8");
             part.addFilePart("inputFile",inputFile);
             part.addHeaderField("outputFormat","pdf");
             List<String> result = part.finish();
-
-            // add request header
-            con.setRequestMethod("POST");
-            con.setRequestProperty("Content-Type", sourceMimeType);
-            con.setRequestProperty("Accept", targetMimeType);
-            //curl -XPOST -F inputFile=@Costanza.docx -F outputFormat='pdf' http://localhost:8080/converter --output aaa
-            // Send post request
-            con.setDoOutput(true);
-            DataOutputStream wr = new DataOutputStream(con.getOutputStream());
-
-            // FIXME add support for 2GB+ content... Really ?
-            IOUtils.copy(is, wr);
-            wr.flush();
-            wr.close();
-
-            int responseCode = con.getResponseCode();
-            if (responseCode != 200) {
-                // Something went extremely wrong on remote server
-                logger.error("Remote transformation failed, remote host returned response code :" + responseCode);
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Source MimeType : " + sourceMimeType);
-                    logger.debug("Target MimeType : " + targetMimeType);
-                    logger.debug("Source size : " + reader.getSize());
-                    logger.debug("Source ContentURL : " + reader.getContentUrl());
-                    logger.debug("Remote JODConverter instance : " + endpoint);
-                }
-                throw new TransformException(con.getResponseMessage());
-            }
-
             IOUtils.copy(con.getInputStream(), os);
         } finally {
             if (logger.isDebugEnabled()) {
